@@ -19,12 +19,7 @@ int Infix_Evaluator::eval(string expression) {
     }
     if (expression.length() == 2) { throw std::invalid_argument("Invalid expression");}
 
-    try {
-        return helper_eval(expression, false);
-    } catch (std::invalid_argument &e) {
-        throw std::invalid_argument(e.what());
-    }
-    //return helper_eval(expression, false);
+    return helper_eval(expression, false);
 }
 
 bool Infix_Evaluator::is_operator(char ch) const {
@@ -60,8 +55,8 @@ int Infix_Evaluator::helper_eval(string &expression, bool insidePar) {
         } else if (isdigit(curr)) { //if curr el is an operand push it to the operand stack
             operand_stack.push(stoi(std::string(1, curr)));
         } else if (curr == '(') { // if we come across parentheses, we evaluate the expression inside the parentheses
-            if (expression.size() == 1) {
-                throw std::invalid_argument("Invalid format");
+            if (expression.size() == 1) { //if the ( is last el in the expression, error
+                throw std::invalid_argument("Invalid expression");
             } else if (expression[1] == ')') { //if the expression is () then error
                 throw std::invalid_argument("Empty parenthesis");
             }
@@ -85,9 +80,6 @@ int Infix_Evaluator::helper_eval(string &expression, bool insidePar) {
             //calculate the stacks of operators with higher precedence than the curr el
             //function modifies the stacks, so we don't need to push the curr el
 
-            if (operand_stack.size() < operator_stack.size() + 1) {
-                throw std::invalid_argument("Invalid expression");
-            }
             calculate_stacks(operand_stack, operator_stack);
             operator_stack.push(curr);
         } else { //if the el is not a valid operator or operand, error
@@ -98,16 +90,13 @@ int Infix_Evaluator::helper_eval(string &expression, bool insidePar) {
         expression = expression.substr(1, expression.size());
     }
 
-    if (operand_stack.size() < operator_stack.size() + 1) {
-        throw std::invalid_argument("Invalid expression");
-    }
     return calculate_stacks(operand_stack, operator_stack);
 }
 
 int Infix_Evaluator::calculate_stacks(std::stack<int> &operand_stack, std::stack<char> &operator_stack) {
-//    if (operand_stack.size() < operator_stack.size() + 1) {
-//        throw Syntax_Error("Invalid expression");
-//    }
+    if (operand_stack.size() < operator_stack.size() + 1) {
+        throw Syntax_Error("Invalid expression");
+    }
 
     while (!operator_stack.empty()) {
         int rhs = operand_stack.top();
